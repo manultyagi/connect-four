@@ -119,7 +119,7 @@ Tracked metrics include:
 
 ### ▶️ Run Without Kafka & Database (Gameplay Only)
 
-```bash
+
 go run .
 Bot and PvP gameplay work
 
@@ -127,7 +127,7 @@ Leaderboard is disabled
 
 Kafka analytics disabled
 
-▶️ Run With PostgreSQL (Leaderboard Enabled)
+### ▶️ Run With PostgreSQL (Leaderboard Enabled)
 1️⃣ Start PostgreSQL
 Create a database and tables:
 
@@ -150,7 +150,8 @@ bash
 Copy code
 set ENABLE_DB=true
 go run .
-▶️ Run With Kafka Analytics
+
+### ▶️ Run With Kafka Analytics
 1️⃣ Start Kafka (KRaft mode)
 bash
 Copy code
@@ -177,49 +178,57 @@ set ENABLE_DB=true
 go run .
 Analytics output will appear in the consumer terminal.
 
-🌐 API Endpoints
-Endpoint	Description
-/	Game UI
-/ws	WebSocket gameplay
-/leaderboard	Leaderboard data
 
-🧪 Production Notes
+### 🧪 Production Notes
 Kafka and DB are feature-flagged
 
 Core gameplay runs independently
 
 Mirrors real-world production architecture
 
-📂 Project Structure
-text
-Copy code
+### 📂 Project Structure
 connect-four/
+
 ├── analytics/
+
 │   └── main.go
+
 ├── public/
+
 │   ├── index.html
+
 │   ├── app.js
+
 │   ├── leaderboard.html
+
 │   └── style.css
+
 ├── server.go
+
 ├── game.go
+
 ├── bot.go
+
 ├── db.go
+
 ├── kafka_producer.go
+
 ├── main.go
+
 ├── go.mod
+
 └── README.md
-🏁 Summary
+### 🏁 Summary
 This project demonstrates:
 
-Real-time backend systems
+- Real-time backend systems
 
-WebSocket communication
+- WebSocket communication
 
-Matchmaking and bot logic
+- Matchmaking and bot logic
 
-Decoupled analytics with Kafka
+- Decoupled analytics with Kafka
 
-Production-safe architecture
+- Production-safe architecture
 
-Clean, testable Go code
+- Clean, testable Go code
