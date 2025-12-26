@@ -8,7 +8,12 @@ import (
 
 func main() {
 	// 1️⃣ Initialize database
-	InitDB()
+	if os.Getenv("ENABLE_DB") == "true" {
+		fmt.Println("Database enabled")
+		InitDB()
+	} else {
+		fmt.Println("Database disabled")
+	}
 
 	// 2️⃣ Initialize Kafka ONLY if enabled
 	if os.Getenv("ENABLE_KAFKA") == "true" {
