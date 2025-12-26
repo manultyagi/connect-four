@@ -199,20 +199,34 @@ This mirrors real-world production architecture
 
 📂 Project Structure
 connect-four/
+
 ├── analytics/
+
 │   └── main.go
 ├── public/
+
 │   ├── index.html
+
 │   ├── app.js
+
 │   ├── leaderboard.html
+
 │   └── style.css
+
 ├── server.go
+
 ├── game.go
+
 ├── bot.go
+
 ├── db.go
+
 ├── kafka_producer.go
+
 ├── main.go
+
 ├── go.mod
+
 └── README.md
 
 🏁 Summary
