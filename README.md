@@ -147,16 +147,17 @@ CREATE TABLE games (
 );
 
 2️⃣ Enable DB and start server
-bash
-Copy code
+
 set ENABLE_DB=true
+
 go run .
 
 ### ▶️ Run With Kafka Analytics
 1️⃣ Start Kafka (KRaft mode)
 
 bin/windows/kafka-server-start.bat config/kraft/server.properties
-Create topic (one-time):
+
+- Create topic (one-time):
 
 
 bin/windows/kafka-topics.bat --create \
@@ -168,22 +169,26 @@ bin/windows/kafka-topics.bat --create \
 2️⃣ Start Analytics Consumer
 
 cd analytics
+
 go run .
 
 3️⃣ Start Game Server
 
 set ENABLE_KAFKA=true
+
 set ENABLE_DB=true
+
 go run .
+
 -Analytics output will appear in the consumer terminal.
 
 
 ### 🧪 Production Notes
-Kafka and DB are feature-flagged
+- Kafka and DB are feature-flagged
 
-Core gameplay runs independently
+- Core gameplay runs independently
 
-Mirrors real-world production architecture
+- Mirrors real-world production architecture
 
 ### 📂 Project Structure
 connect-four/
