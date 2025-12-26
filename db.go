@@ -30,8 +30,7 @@ func InitDB() {
 
 // saveGameResult persists a completed game and updates player wins
 func saveGameResult(session *GameSession) {
-	// 🔑 CRITICAL FIX:
-	// If DB is disabled (db == nil), do nothing
+	// 🔑 If DB is disabled, skip safely
 	if db == nil {
 		log.Println("DB disabled, skipping saveGameResult")
 		return
@@ -85,4 +84,41 @@ func saveGameResult(session *GameSession) {
 			log.Println("Failed to update player wins:", err)
 		}
 	}
+}
+
+// getLeaderboard returns sorted leaderboard data
+func getLeaderboard() ([]map[string]interface{}, error) {
+	// 🔑 If DB is disabled, return empty leaderboard
+	if db == nil {
+		log.Println("DB disabled, returning empty leaderboard")
+		return []map[string]interface{}{}, nil
+	}
+
+	rows, err := db.Query(
+		`SELECT username, wins
+		 FROM players
+		 ORDER BY wins DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var leaderboard []map[string]interface{}
+
+	for rows.Next() {
+		var username string
+		var wins int
+
+		if err := rows.Scan(&username, &wins); err != nil {
+			return nil, err
+		}
+
+		leaderboard = append(leaderboard, map[string]interface{}{
+			"username": username,
+			"wins":     wins,
+		})
+	}
+
+	return leaderboard, nil
 }
