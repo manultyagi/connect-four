@@ -1,0 +1,70 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+
+h1 {
+  margin-top: 20px;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(7, 70px);
+  grid-gap: 8px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.cell {
+  width: 70px;
+  height: 70px;
+  background: #1e293b;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.player1 {
+  background: red;
+}
+
+.player2 {
+  background: yellow;
+}
+
+button {
+  padding: 10px 15px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(-300px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.drop {
+  animation: drop 0.4s ease-out;
+}
+
+#leaderboard {
+  width: 300px;
+  margin: 30px auto;
+}
+
+.leaderboard-item {
+  background: #1e293b;
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+}
+
+
