@@ -2,16 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
-
-// --------------------
-// Models
-// --------------------
 
 type Player struct {
 	Username     string
@@ -28,6 +23,7 @@ type ServerMessage struct {
 	Turn         int                `json:"turn"`
 	Winner       int                `json:"winner"`
 	PlayerNumber int                `json:"playerNumber"`
+	Status       string             `json:"status,omitempty"`
 }
 
 type GameSession struct {
@@ -41,19 +37,11 @@ type PlayerMove struct {
 	Column int
 }
 
-// --------------------
-// Globals
-// --------------------
-
 var waitingPlayer *Player
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
-
-// --------------------
-// WebSocket Handler
-// --------------------
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -71,34 +59,36 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	player := &Player{
-		Username: intro.Username,
-		Conn:     conn,
+		Username:     intro.Username,
+		Conn:         conn,
+		PlayerNumber: 1,
 	}
 
 	if waitingPlayer == nil {
-		player.PlayerNumber = 1
 		waitingPlayer = player
 
-		conn.WriteJSON(map[string]string{
-			"status": "waiting for opponent",
+		player.Conn.WriteJSON(ServerMessage{
+			Status: "waiting for opponent",
 		})
 
-		go func() {
+		go func(p *Player) {
 			time.Sleep(10 * time.Second)
-			if waitingPlayer == player {
+			if waitingPlayer == p {
 				waitingPlayer = nil
 				runGameSession(&GameSession{
 					Game:    NewGame(),
-					Player1: player,
+					Player1: p,
 					Player2: nil,
 				})
 			}
-		}()
+		}(player)
 
 	} else {
-		player.PlayerNumber = 2
 		opponent := waitingPlayer
 		waitingPlayer = nil
+
+		player.PlayerNumber = 2
+		opponent.PlayerNumber = 1
 
 		runGameSession(&GameSession{
 			Game:    NewGame(),
@@ -108,29 +98,11 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// --------------------
-// Game Session
-// --------------------
-
 func runGameSession(session *GameSession) {
 	game := session.Game
 	moves := make(chan PlayerMove)
 
-	player2Name := "BOT"
-	if session.Player2 != nil {
-		player2Name = session.Player2.Username
-	}
-
-	gameID := fmt.Sprintf("%d-%s", time.Now().UnixNano(), session.Player1.Username)
-	startTime := time.Now().UTC()
-
-	emitEvent("GAME_STARTED", map[string]interface{}{
-		"gameId":  gameID,
-		"player1": session.Player1.Username,
-		"player2": player2Name,
-	})
-
-	sendState := func() {
+	sendState := func(status string) {
 		send := func(p *Player) {
 			if p == nil {
 				return
@@ -140,6 +112,7 @@ func runGameSession(session *GameSession) {
 				Turn:         game.Turn,
 				Winner:       game.Winner,
 				PlayerNumber: p.PlayerNumber,
+				Status:       status,
 			})
 		}
 		send(session.Player1)
@@ -164,48 +137,33 @@ func runGameSession(session *GameSession) {
 	startReader(session.Player1)
 	startReader(session.Player2)
 
-	sendState()
+	// 🔑 EXPLICIT GAME START STATE
+	sendState("game started")
 
 	for game.Winner == 0 {
 
-		// 🤖 Bot move
+		// Bot move
 		if game.Turn == 2 && session.Player2 == nil {
-			time.Sleep(800 * time.Millisecond)
+			time.Sleep(700 * time.Millisecond)
 			game.MakeMove(BotMove(game))
-			sendState()
+			sendState("")
 			continue
 		}
 
 		move := <-moves
 
-		// 🔐 Enforce turn
 		if move.Player.PlayerNumber != game.Turn {
 			continue
 		}
 
 		if game.MakeMove(move.Column) {
-			sendState()
+			sendState("")
 		}
 	}
 
+	sendState("game finished")
 	saveGameResult(session)
-
-	emitEvent("GAME_FINISHED", map[string]interface{}{
-		"gameId":    gameID,
-		"player1":   session.Player1.Username,
-		"player2":   player2Name,
-		"winner":    game.Winner,
-		"moves":     game.Moves,
-		"startedAt": startTime,
-		"endedAt":   time.Now().UTC(),
-	})
-
-	fmt.Println("Game finished")
 }
-
-// --------------------
-// Leaderboard
-// --------------------
 
 func leaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	leaderboard, err := getLeaderboard()
