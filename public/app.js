@@ -6,7 +6,7 @@ let myPlayerNumber = null;
 const boardDiv = document.getElementById("board");
 const status = document.getElementById("status");
 
-// Create empty board
+// Create empty board immediately
 function createEmptyBoard() {
     const board = Array.from({ length: 6 }, () => Array(7).fill(0));
     renderBoard(board);
@@ -16,7 +16,6 @@ function connect() {
     const username = document.getElementById("username").value.trim();
     if (!username) return;
 
-    // ✅ Render empty board immediately
     createEmptyBoard();
 
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -26,6 +25,11 @@ function connect() {
     ws.onopen = () => {
         ws.send(JSON.stringify({ username }));
         status.innerText = "Connected as " + username;
+
+        // 🔑 CRITICAL FIX:
+        // Allow Player 1 to make the first move immediately.
+        // Server will still validate turns.
+        myTurn = true;
     };
 
     ws.onmessage = (event) => {
@@ -62,6 +66,7 @@ function connect() {
 
     ws.onerror = () => {
         status.innerText = "WebSocket connection failed";
+        myTurn = false;
     };
 
     ws.onclose = () => {
