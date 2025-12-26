@@ -10,7 +10,9 @@ function connect() {
     const username = document.getElementById("username").value.trim();
     if (!username) return;
 
-    ws = new WebSocket("ws://localhost:8080/ws");
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const wsUrl = `${protocol}://${window.location.host}/ws`;
+    ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
         ws.send(JSON.stringify({ username }));
@@ -23,7 +25,9 @@ function connect() {
         if (data.status) status.innerText = data.status;
         if (data.playerNumber) myPlayerNumber = data.playerNumber;
         if (data.board) renderBoard(data.board);
-        if (data.turn) myTurn = data.turn === myPlayerNumber;
+        if (data.turn !== undefined && myPlayerNumber !== null) {
+            myTurn = data.turn === myPlayerNumber;
+        }
 
         if (data.winner && data.winner !== 0) {
             setTimeout(() => {
@@ -36,6 +40,14 @@ function connect() {
                 );
             }, 400);
         }
+    };
+
+    ws.onerror = () => {
+        status.innerText = "WebSocket connection failed";
+    };
+
+    ws.onclose = () => {
+        myTurn = false;
     };
 }
 
