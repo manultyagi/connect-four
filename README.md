@@ -121,18 +121,18 @@ Tracked metrics include:
 
 
 go run .
-Bot and PvP gameplay work
 
-Leaderboard is disabled
+- Bot and PvP gameplay work
 
-Kafka analytics disabled
+- Leaderboard is disabled
+
+- Kafka analytics disabled
 
 ### ▶️ Run With PostgreSQL (Leaderboard Enabled)
 1️⃣ Start PostgreSQL
-Create a database and tables:
+- Create a database and tables:
 
-sql
-Copy code
+
 CREATE TABLE players (
   username TEXT PRIMARY KEY,
   wins INT
@@ -145,6 +145,7 @@ CREATE TABLE games (
   winner TEXT,
   moves INT
 );
+
 2️⃣ Enable DB and start server
 bash
 Copy code
@@ -153,30 +154,28 @@ go run .
 
 ### ▶️ Run With Kafka Analytics
 1️⃣ Start Kafka (KRaft mode)
-bash
-Copy code
+
 bin/windows/kafka-server-start.bat config/kraft/server.properties
 Create topic (one-time):
 
-bash
-Copy code
+
 bin/windows/kafka-topics.bat --create \
   --topic game-events \
   --bootstrap-server localhost:9092 \
   --partitions 1 \
   --replication-factor 1
+  
 2️⃣ Start Analytics Consumer
-bash
-Copy code
+
 cd analytics
 go run .
+
 3️⃣ Start Game Server
-bash
-Copy code
+
 set ENABLE_KAFKA=true
 set ENABLE_DB=true
 go run .
-Analytics output will appear in the consumer terminal.
+-Analytics output will appear in the consumer terminal.
 
 
 ### 🧪 Production Notes
