@@ -6,9 +6,18 @@ let myPlayerNumber = null;
 const boardDiv = document.getElementById("board");
 const status = document.getElementById("status");
 
+// Create empty board
+function createEmptyBoard() {
+    const board = Array.from({ length: 6 }, () => Array(7).fill(0));
+    renderBoard(board);
+}
+
 function connect() {
     const username = document.getElementById("username").value.trim();
     if (!username) return;
+
+    // ✅ Render empty board immediately
+    createEmptyBoard();
 
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const wsUrl = `${protocol}://${window.location.host}/ws`;
@@ -22,9 +31,18 @@ function connect() {
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        if (data.status) status.innerText = data.status;
-        if (data.playerNumber) myPlayerNumber = data.playerNumber;
-        if (data.board) renderBoard(data.board);
+        if (data.status) {
+            status.innerText = data.status;
+        }
+
+        if (data.playerNumber) {
+            myPlayerNumber = data.playerNumber;
+        }
+
+        if (data.board) {
+            renderBoard(data.board);
+        }
+
         if (data.turn !== undefined && myPlayerNumber !== null) {
             myTurn = data.turn === myPlayerNumber;
         }
@@ -54,22 +72,26 @@ function connect() {
 function renderBoard(board) {
     boardDiv.innerHTML = "";
 
-    for (let r = 0; r < 6; r++) {
-        for (let c = 0; c < 7; c++) {
+    for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < 7; col++) {
             const cell = document.createElement("div");
             cell.className = "cell";
 
-            if (board[r][c] === 1) cell.classList.add("player1");
-            if (board[r][c] === 2) cell.classList.add("player2");
+            if (board[row][col] === 1) cell.classList.add("player1");
+            if (board[row][col] === 2) cell.classList.add("player2");
 
-            if (previousBoard && previousBoard[r][c] === 0 && board[r][c] !== 0) {
+            if (
+                previousBoard &&
+                previousBoard[row][col] === 0 &&
+                board[row][col] !== 0
+            ) {
                 cell.classList.add("drop");
             }
 
             cell.onclick = () => {
                 if (!myTurn) return;
                 myTurn = false;
-                ws.send(JSON.stringify({ column: c }));
+                ws.send(JSON.stringify({ column: col }));
             };
 
             boardDiv.appendChild(cell);
